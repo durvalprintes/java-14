@@ -1,39 +1,34 @@
 package br.com.codenation;
 
-import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.lang.Double;
 
 public class StatisticUtil {
 
 	public static int average(int[] elements) {
-		return Math.round(Arrays.stream(elements).reduce(0, Integer::sum)/elements.length);
+		return new Double(IntStream.of(elements).average().getAsDouble()).intValue();
 	}
 
 	public static int mode(int[] elements) {
-		int[] array = Arrays.stream(elements).sorted().toArray();
-		int element = array[0], count = 1, 
-			highElement = element, highCount = 0;
-		for (int i = 1; i < array.length; i++) {
-			if (element == array[i] && i < array.length - 1) {
-				count++;
-			} else {
-				if (count >= highCount) {
-					highElement = element;
-					highCount = count;
-				}
-				element = array[i];
-				count = 1;
-			}
-		}
-		return highElement;
+		Map<Integer, Long> frequencias = IntStream.of(elements).boxed()
+		.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+		return frequencias.entrySet().stream()
+		.max(Comparator.comparingLong(Map.Entry::getValue))
+		.map(Map.Entry::getKey).get().intValue();
 	}
 
 	public static int median(int[] elements) {
-		int[] array = Arrays.stream(elements).sorted().toArray();
-		int size = array.length;
-		if (size % 2 == 1) {
-			return array[Math.floorDiv(size, 2)];
+		if (elements.length % 2 == 1) {
+			return IntStream.of(elements).sorted()
+			.skip(elements.length/2).findFirst().getAsInt();
 		} else {
-			return Math.round((array[size/2] + array[(size/2)-1]) / 2);
+			return new Double(IntStream.of(elements).sorted()
+			.skip(elements.length/2-1).limit(2).average().getAsDouble()).intValue();
 		}		
 	}
 }
